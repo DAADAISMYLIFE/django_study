@@ -18,7 +18,7 @@ class UserGet(APIView):
             serializer = UserSerializer(user)
             return Response({"status": "success", "detail": serializer.data}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            raise ValidationError("유저를 찾을 수 없습니다.", code=400)
+            raise ValidationError("유저를 찾을 수 없습니다!", code=400)
 
 
 class UserPost(APIView):
