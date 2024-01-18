@@ -24,9 +24,17 @@ class UserGet(APIView):
 class UserPost(APIView):
 
     def post(self, request):
+
+        password = request.data.get("password")
+
+        if not password:
+            raise ParseError(code=400)
+
         serializer = UserSerializer(data=request.data, )
 
         if serializer.is_valid():
+            created_user = serializer.save()
+            created_user.set_password(password)
             created_user = serializer.save()
             serializer = UserSerializer(created_user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
