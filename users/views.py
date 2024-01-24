@@ -6,20 +6,29 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from users.models import User
-from users.permissions import UsernamePermission
+from users.permissions import GroupPermission
 from users.serializer import UserSerializer
 
 
 class UserGet(APIView):
     # 로그인 인증된 유저만 검색 가능
-    permission_classes = [UsernamePermission]
+    permission_classes = [GroupPermission]
 
     def get(self, request):
         username = request.query_params.get("username")
-
         # 파라미터가 없을 경우
         if not username:
             raise ValidationError("유저를 찾을 수 없습니다!", code=400)
+
+        """
+        # 위의 예외 처리하는 코드를 직접 작성한 예시 코드입니다.
+        try:    
+            if not username:
+                raise ValidationError
+        except ValidationError:
+            # 직접 오류에 대한 처리를 함
+            return Response({"error" : "userDoesNotFound"},status=status.HTTP_400_BAD_REQUEST)
+        """
 
         # 유저를 찾을 수 없는 경우
         try:
@@ -31,7 +40,7 @@ class UserGet(APIView):
                 serializer = UserSerializer(user)
                 return Response({"status": "success", "detail": serializer.data}, status=status.HTTP_200_OK)
             else:
-                raise ParseError("로그인 유저가 아닙니다.", code=400)
+                raise ParseError("로그인된 유저가 아닙니다.", code=400)
 
         except User.DoesNotExist:
             raise NotFound("유저를 찾을 수 없습니다.")
@@ -90,9 +99,8 @@ class LogIn(APIView):
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
-
         if not username or not password:
-            raise ParseError("username과 password를 입력하세요",code=400)
+            raise ParseError("username과 password를 입력하세요", code=400)
 
         user = authenticate(
             request,
@@ -105,7 +113,7 @@ class LogIn(APIView):
             return Response({"status": "success"}, status=status.HTTP_200_OK)
 
         else:
-            return Response({"status": "failed"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": "fail"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogOut(APIView):
