@@ -12,26 +12,35 @@ from users.serializer import UserSerializer
 
 class UserGet(APIView):
     # 로그인 인증된 유저만 검색 가능
-    permission_classes = [UsernamePermission]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         username = request.query_params.get("username")
+        password = request.query_params.get("password")
 
         # 파라미터가 없을 경우
-        if not username:
-            raise ValidationError("유저를 찾을 수 없습니다!", code=400)
+        if not username or not password:
+            raise ValidationError("정보를 입력해 주세요.", code=400)
 
         # 유저를 찾을 수 없는 경우
         try:
+            # 유저가 있는지 검사
             user = User.objects.get(username=username)
 
-            # 검색하는 유저가 현재 로그인된 유저가 아닐 경우
+            # 입력한 정보를 토대로 인증
+            user = authenticate(
+                request,
+                username=username,
+                password=password,
+            )
+
+            # 검색하는 유저가 현재 로그인된 유저인 경우에만 실행
             if user == request.user:
                 user = request.user
                 serializer = UserSerializer(user)
                 return Response({"status": "success", "detail": serializer.data}, status=status.HTTP_200_OK)
             else:
-                raise ParseError("로그인 유저가 아닙니다.", code=400)
+                raise ParseError("정보가 일치하지 않습니다.", code=400)
 
         except User.DoesNotExist:
             raise NotFound("유저를 찾을 수 없습니다.")
