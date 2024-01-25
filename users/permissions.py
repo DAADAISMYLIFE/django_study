@@ -1,12 +1,13 @@
 from rest_framework import permissions
 
 
-class UsernamePermission(permissions.BasePermission):
+class GroupPermission(permissions.BasePermission):
 
+    # 그룹이 없을 경우에 True 반환
     def has_permission(self, request, view):
-        username = request.user.username
+        groups = request.user.groups.all()
 
-        if username != "badaong":
-            return False
-        else:
+        if not groups:
             return True
+        else:
+            return False
