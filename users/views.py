@@ -23,9 +23,6 @@ class UserGet(APIView):
 
         # 유저를 찾을 수 없는 경우
         try:
-            # 유저가 있는지 검사
-            user = User.objects.get(username=username)
-
             # 입력한 정보를 토대로 인증
             user = authenticate(
                 request,
@@ -38,6 +35,9 @@ class UserGet(APIView):
                 user = request.user
                 serializer = UserSerializer(user)
                 return Response({"status": "success", "detail": serializer.data}, status=status.HTTP_200_OK)
+            elif not user:
+                raise NotFound("유저를 찾을 수 없습니다.")
+
             else:
                 raise ParseError("정보가 일치하지 않습니다.", code=400)
 
