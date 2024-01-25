@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from users.models import User
-from users.permissions import UsernamePermission
 from users.serializer import UserSerializer
 
 
